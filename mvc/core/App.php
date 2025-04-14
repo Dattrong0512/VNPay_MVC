@@ -3,16 +3,15 @@
 class App
 {
     protected $controller = "Home";
-    protected $action = "SayHi";
+    protected $action = "Show";
     protected $params = [];
 
     function __construct()
     {
         $arr = $this->UrlProcess();
 
-        if (file_exists("./mvc/controllers/" . $arr[0] . ".php")) {
-            echo ("Ton tai file do");
-            $this->controller = $arr[0];
+        if (!empty($arr) && (file_exists("./mvc/controllers/" . $arr[0] . ".php"))) {
+            $this->controller = $arr[0]; // Thêm hậu tố "Controller"
             unset($arr[0]);
         }
         require_once "./mvc/controllers/" . $this->controller . ".php";
