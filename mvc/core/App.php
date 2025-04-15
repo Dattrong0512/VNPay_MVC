@@ -8,32 +8,50 @@ class App
 
     function __construct()
     {
-        $arr = $this->UrlProcess();
+        $urlData = $this->UrlProcess();
 
-        if (!empty($arr) && (file_exists("./mvc/controllers/" . $arr[0] . ".php"))) {
-            $this->controller = $arr[0]; // Thêm hậu tố "Controller"
-            unset($arr[0]);
+        // Lấy các phần của URL (controller, action) và query params
+        $urlParts = $urlData['urlParts'] ?? [];
+        $queryParams = $urlData['queryParams'] ?? [];
+
+        // Xử lý controller
+        if (!empty($urlParts) && file_exists("./mvc/controllers/" . $urlParts[0] . ".php")) {
+            $this->controller = $urlParts[0];
+            unset($urlParts[0]);
         }
         require_once "./mvc/controllers/" . $this->controller . ".php";
         $this->controller = new $this->controller;
 
-        //Action
-        if (isset($arr[1])) {
-            if (method_exists($this->controller, $arr[1])) {
-                $this->action = $arr[1];
+        // Xử lý action
+        if (isset($urlParts[1])) {
+            if (method_exists($this->controller, $urlParts[1])) {
+                $this->action = $urlParts[1];
             }
-            unset($arr[1]);
+            unset($urlParts[1]);
         }
-        // Params
-        $this->params = $arr ? array_values($arr) : [];
 
-        call_user_func_array([$this->controller, $this->action], $this->params);
+        // Gộp các phần còn lại của URL (nếu có) và query params vào $this->params
+        $this->params = array_merge($urlParts ? array_values($urlParts) : [], $queryParams);
+
+        // Gọi action với params (bao gồm cả query params)
+        call_user_func_array([$this->controller, $this->action], [$this->params]);
     }
 
     function UrlProcess()
     {
+        $urlParts = [];
+        $queryParams = $_GET; // Lấy toàn bộ $_GET
+
+        // Xử lý phần URL (controller/action)
         if (isset($_GET["url"])) {
-            return explode("/", filter_var(trim($_GET["url"], "/")));
+            $urlParts = explode("/", filter_var(trim($_GET["url"], "/")));
+            unset($queryParams["url"]); // Loại bỏ tham số "url" khỏi queryParams
         }
+
+        // Trả về mảng chứa urlParts và queryParams
+        return [
+            'urlParts' => $urlParts,
+            'queryParams' => $queryParams
+        ];
     }
 }

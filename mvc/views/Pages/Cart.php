@@ -47,8 +47,8 @@
             <button type="submit" style="padding: 10px 20px; background-color: #2ecc71; color: #fff; border: none; cursor: pointer; border-radius: 5px; font-size: 16px;">
                 Thanh toán
             </button>
-    </form>
-</div>
+        </form>
+    </div>
 <?php else: ?>
     <p style="text-align: center; color: #666;">Giỏ hàng của bạn đang trống.</p>
 <?php endif; ?>
