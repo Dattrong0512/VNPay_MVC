@@ -114,6 +114,11 @@
                 ?>
             </tbody>
         </table>
+        <div class="actions">
+            <button class="shop-button" onclick="window.location.href='/VNPay/Home'">
+                Tiếp tục mua sắm
+            </button>
+        </div>
     </div>
 </body>
 </html>

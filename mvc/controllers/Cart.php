@@ -27,14 +27,68 @@ class Cart extends Controller
         }
     }
 
+    public function AddToCart()
+    {
+    // Lấy thông tin từ request
+        $product_id = isset($_POST['product_id']) ? $_POST['product_id'] : null;
+        $product_amount = isset($_POST['product_amount']) ? $_POST['product_amount'] : 1;
+        $current_page = isset($_POST['current_page']) ? (int)$_POST['current_page'] : 1;
+        $search = isset($_POST['search']) ? $_POST['search'] : '';
+        $category = isset($_POST['category']) ? $_POST['category'] : '';
+        // ID của người dùng hiện tại (có thể lấy từ session)
+        $customer_id = 3; // Thay bằng ID thực tế từ session
+        
+        if ($product_id) {
+            // Thêm sản phẩm vào giỏ hàng
+            $cartModel = $this->model("CartModel");
+            $cart = $cartModel->GetCart();
+            $orders_id = !empty($cart) ? $cart[0]['orders_id'] : null;
+            $result = $cartModel->InsertItem($orders_id, $customer_id, $product_id, $product_amount);
+        }
+        
+        // Xây dựng URL chuyển hướng
+        $redirectParams = array();
+        
+        // Thêm tham số trang
+        if ($current_page > 1) {
+            $redirectParams[] = "page=" . $current_page;
+        }
+        
+        // Thêm tham số tìm kiếm nếu có
+        if (!empty($search)) {
+            $redirectParams[] = "search=" . urlencode($search);
+        }
+        
+        // Thêm tham số danh mục nếu có
+        if (!empty($category)) {
+            $redirectParams[] = "category=" . $category;
+        }
+        
+        // Tạo URL chuyển hướng
+        $redirectUrl = "/VNPay/Product/Show";
+        if (!empty($redirectParams)) {
+            $redirectUrl .= "?" . implode("&", $redirectParams);
+        }
+        
+        // Chuyển hướng với tham số đầy đủ
+        header("Location: " . $redirectUrl);
+        exit();
+    }
+
+    
+
     public function Confirm_VNPay()
     {
         date_default_timezone_set('Asia/Ho_Chi_Minh');
         $tongtien = $_POST['sotien'];
+        $orders_id = $_POST['orders_id'];
+        session_start();
+        $_SESSION['pending_order_id'] = $orders_id;
+
         $vnp_TmnCode = "XHNCAN88"; //Website ID in VNPAY System
         $vnp_HashSecret = "PCVN2A7YEHPR7H0F7Z70K1AP8A9Z53TO"; //Secret key
         $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        $vnp_Returnurl = "http://localhost:8080/VNPay/Payment";
+        $vnp_Returnurl = "http://localhost:8080/VNPay/Payment/Show";
         $vnp_apiUrl = "http://sandbox.vnpayment.vn/merchant_webapi/merchant.html";
         //Config input format
         //Expire

@@ -62,13 +62,45 @@
         }
 
         .cart-icon {
-            font-size: 20px;
+            font-size: 24px;
         }
 
         main {
             margin-top: 80px;
             /* Để tránh nội dung bị che bởi header fixed */
             flex: 1;
+        }
+        
+        .cart-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #f0c14b;
+            color: #222;
+            border-radius: 50%;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .update-animation {
+            animation: pulse 0.5s ease-in-out;
+            background-color: #ff6b6b;
         }
 
         /* Responsive */
@@ -96,11 +128,27 @@
 <body>
     <header>
         <div class="logo">
-            <a href="/VNPay/Home">Gym Shop</a>
+            <a href="/VNPay/Home">Gymilize</a>
         </div>
         <div class="cart">
-            <span class="cart-icon">🛒</span>
-            <a href="/VNPay/Cart">Giỏ hàng</a>
+            <?php
+            require_once("./mvc/models/CartModel.php");
+            require_once("./mvc/core/DB.php");
+
+            $cartModel = new CartModel();
+            $cartItemCount = 0;
+            $cart = $cartModel->GetCart();
+            if (is_array($cart)) {
+                $cartItemCount = count($cart);
+            }
+            ?>
+            <div class="cart">
+                <a href="/VNPay/Cart/Show" class="cart-container">  <!-- Liên kết 1: Icon với số lượng -->
+                    <span class="cart-icon">🛒</span>
+                    <span class="cart-count" id = "cart-count"><?php echo $cartItemCount ;?></span>
+                </a>
+                <a href="/VNPay/Cart/Show">Giỏ hàng</a>  <!-- Liên kết 2: Chỉ có chữ -->
+            </div>
         </div>
     </header>
     <main>

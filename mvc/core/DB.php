@@ -6,9 +6,9 @@ class DB
 {
     public $conn;
     public $servername = "localhost";
-    public $username = "dattrong";
-    public $password = "12345Aa";
-    public $dbname = "Shop";
+    public $username = "minhquan";
+    public $password = "12345";
+    public $dbname = "VNPAYSHOP";
 
     function __construct()
     {

@@ -6,9 +6,20 @@ class Payment extends Controller
     public function Show($params)
     {
         // Lấy các tham số từ $params
-
-        // Xử lý logic (ví dụ: kiểm tra kết quả thanh toán từ VNPay)
-        $this->view("Pages/Payment", $params
-        );
+        $data = $_GET;
+        
+        if (isset($data['vnp_ResponseCode']) && $data['vnp_ResponseCode'] === '00') {
+            // Lấy orders_id từ session
+            session_start();
+            $orders_id = isset($_SESSION['pending_order_id']) ? $_SESSION['pending_order_id'] : null;
+            
+            if ($orders_id) {
+                $cartModel = $this->model("CartModel");
+                $cartModel->UpdateOrderStatus($orders_id, 'Completed', $transaction_info);
+                
+                unset($_SESSION['pending_order_id']);
+            }
+            $this->view("Pages/Payment", $params);
+        }
     }
 }
