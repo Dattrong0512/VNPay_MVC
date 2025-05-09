@@ -35,7 +35,7 @@
             text-align: left;
         }
         th {
-            background-color: #4CAF50;
+            background-color: black;
             color: white;
         }
         tr:nth-child(even) {
@@ -55,6 +55,24 @@
         .status-error {
             color: red;
             font-weight: bold;
+        }
+        .actions {
+        text-align: center;
+        margin-top: 25px;
+        }
+        .shop-button {
+            background-color: #222;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .shop-button:hover {
+            background-color: #444;
         }
     </style>
 </head>

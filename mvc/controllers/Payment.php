@@ -14,6 +14,7 @@ class Payment extends Controller
             $orders_id = isset($_SESSION['pending_order_id']) ? $_SESSION['pending_order_id'] : null;
             
             if ($orders_id) {
+                $transaction_info = json_encode($data);
                 $cartModel = $this->model("CartModel");
                 $cartModel->UpdateOrderStatus($orders_id, 'Completed', $transaction_info);
                 

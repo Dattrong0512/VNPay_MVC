@@ -1,5 +1,11 @@
 <h1 class="page-title">Danh sách sản phẩm</h1>
 
+<!-- Thêm container cho thông báo -->
+<div id="notification" class="notification">
+    <i class="fa fa-check-circle notification-icon"></i>
+    <span class="notification-message">Đã thêm sản phẩm vào giỏ hàng</span>
+</div>
+
 <!-- Thêm search bar -->
 <div class="filter-container">
     <!-- Thanh tìm kiếm -->
@@ -70,11 +76,11 @@
                         <h3 class="product-title"><?php echo $product["product_name"]; ?></h3>
                     </div>
                     <p class="product-price"><?php echo number_format($product["product_price"], 0, ',', '.'); ?> VND</p>
+                    <!-- Thay thế form hiện tại với form có event JavaScript -->
                     <div class="button-container">
-                        <form action="/VNPay/Cart/AddToCart" method="POST" onsubmit="updateCartCount(1); return true;">
+                        <form class="add-to-cart-form" onsubmit="addToCart(event, <?php echo $product['product_id']; ?>)">
                             <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
                             <input type="hidden" name="product_amount" value="1">
-                            <input type="hidden" name="current_page" value="<?php echo $data['CurrentPage']; ?>">
                             
                             <!-- Giữ thông tin tìm kiếm -->
                             <?php if (!empty($data['Search'])): ?>
@@ -192,3 +198,69 @@
         <?php endif; ?>
     </div>
 <?php endif; ?>
+
+<!-- Thêm vào cuối file, trước khi đóng tag </div> cuối cùng -->
+
+<script>
+function addToCart(event, productId) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // Hiển thị loading nếu muốn
+    const button = form.querySelector('button');
+    const originalText = button.textContent;
+    button.textContent = "Đang thêm...";
+    button.disabled = true;
+    
+    fetch('/VNPay/Cart/AddToCartAjax', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.success) {
+            // Cập nhật số lượng trong giỏ hàng
+            updateCartCount(1);
+            
+            // Hiển thị thông báo thành công
+            showNotification("Đã thêm sản phẩm vào giỏ hàng");
+            
+            button.textContent = "Đã thêm";
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+            }, 1000);
+        } else {
+            alert('Có lỗi xảy ra: ' + data.message);
+            button.textContent = originalText;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Lỗi:', error);
+        button.textContent = originalText;
+        button.disabled = false;
+    });
+}
+
+// Hàm hiển thị thông báo
+function showNotification(message, duration = 3000) {
+    const notification = document.getElementById('notification');
+    
+    // Cập nhật nội dung thông báo
+    const messageElement = notification.querySelector('.notification-message');
+    if (messageElement) {
+        messageElement.textContent = message;
+    }
+    
+    // Hiển thị thông báo
+    notification.classList.add('show');
+    
+    // Tự động ẩn thông báo sau thời gian đã định
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, duration);
+}
+</script>

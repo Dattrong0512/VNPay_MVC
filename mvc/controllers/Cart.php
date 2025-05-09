@@ -75,6 +75,37 @@ class Cart extends Controller
         exit();
     }
 
+    public function AddToCartAjax() {
+        // Kiểm tra xem yêu cầu có phải POST không
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Lấy dữ liệu từ request
+            $product_id = isset($_POST['product_id']) ? $_POST['product_id'] : null;
+            $product_amount = isset($_POST['product_amount']) ? $_POST['product_amount'] : 1;
+            $customer_id = 3; // Giả sử customer_id là 3 như trong code gốc
+            
+            if ($product_id) {
+                // Gọi model để thêm vào giỏ hàng
+                $cartModel = $this->model("CartModel");
+                $cart = $cartModel->GetCart();
+                $orders_id = !empty($cart) ? $cart[0]['orders_id'] : null;
+                $result = $cartModel->InsertItem($orders_id, $customer_id, $product_id, $product_amount);
+                
+                // Trả về kết quả dạng JSON
+                header('Content-Type: application/json');
+                if ($result) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Không thể thêm sản phẩm vào giỏ hàng']);
+                }
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Thiếu thông tin sản phẩm']);
+            }
+            exit;
+        }
+        
+        // Nếu không phải POST request, chuyển hướng về trang sản phẩm
+        header("Location: /VNPay/Product/Show");
+    }
     
 
     public function Confirm_VNPay()
