@@ -1,25 +1,23 @@
-<!-- filepath: c:\xampp\htdocs\VNPay\mvc\views\Pages\Home.php -->
 <h1 class="home-title">Chào mừng đến với Gym Shop</h1>
 <p class="home-intro">Khám phá các sản phẩm chất lượng cao để hỗ trợ quá trình tập luyện của bạn!</p>
 
 <!-- Form tìm kiếm sản phẩm -->
-<div class="search-container">
-    <form action="/VNPay/Product/Show" method="GET" class="search-form home-search-form">
-        <div class="search-label-container">
-            <label for="search" class="search-label">Tìm kiếm sản phẩm:</label>
-        </div>
-        <div class="search-input-container">
-            <input 
-                type="text" 
-                id="search" 
-                name="search" 
-                placeholder="Nhập tên sản phẩm..." 
-                class="search-input"
-                required
-            >
-            <button type="submit" class="search-button">
-                <i class="fa fa-search"></i> Tìm kiếm
-            </button>
+<div class="home-search-wrapper">
+    <form action="/VNPay/Product/Show" method="GET" class="home-search-form">
+        <div class="search-flex-container">
+            <label for="search" class="home-search-label">Tìm kiếm sản phẩm:</label>
+            <div class="home-search-input-container">
+                <input 
+                    type="text" 
+                    id="search" 
+                    name="search" 
+                    placeholder="Nhập tên sản phẩm..." 
+                    class="home-search-input"
+                >
+                <button type="submit" class="home-search-button">
+                    <i class="fa fa-search"></i> Tìm kiếm
+                </button>
+            </div>
         </div>
     </form>
 </div>

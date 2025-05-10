@@ -107,4 +107,39 @@ class ProductModel extends DB
         $totalProducts = $this->GetTotalProducts($search, $category_id);
         return ceil($totalProducts / $this->itemsPerPage);
     }
+
+    public function searchProductSuggestions($term, $categoryId = "")
+    {
+        // Chuẩn bị câu truy vấn SQL
+        $sql = "SELECT p.product_id, p.product_name, p.product_price 
+                FROM product p
+                WHERE p.product_name LIKE ?";
+        
+        // Thêm điều kiện lọc theo danh mục nếu có
+        $params = ["%$term%"];
+        $types = "s";
+        
+        if (!empty($categoryId)) {
+            $sql .= " AND p.category_id = ?";
+            $params[] = $categoryId;
+            $types .= "i";
+        }
+        
+        // Giới hạn số lượng kết quả và sắp xếp
+        $sql .= " ORDER BY p.product_name ASC LIMIT 10";
+        
+        // Thực hiện truy vấn
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        // Lấy kết quả
+        $suggestions = [];
+        while ($row = $result->fetch_assoc()) {
+            $suggestions[] = $row;
+        }
+        
+        return $suggestions;
+    }
 }

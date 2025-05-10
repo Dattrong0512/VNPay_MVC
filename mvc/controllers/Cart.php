@@ -2,16 +2,58 @@
 require_once("./mvc/core/Controller.php");
 class Cart extends Controller
 {
+    public function __construct()
+    {
+        // Khởi tạo session nếu chưa có
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+    }
+    
+    // Kiểm tra trạng thái đăng nhập qua API
+    public function CheckLogin()
+    {
+        header('Content-Type: application/json');
+        
+        // Kiểm tra xem người dùng đã đăng nhập chưa
+        $isLoggedIn = isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in'] === true;
+        
+        if ($isLoggedIn) {
+            echo json_encode(['loggedIn' => true, 'userId' => $_SESSION['user_id']]);
+        } else {
+            echo json_encode(['loggedIn' => false]);
+        }
+        exit();
+    }
+    
     function Show()
     {
+        // Kiểm tra đăng nhập khi vào trang giỏ hàng
+        if (!isset($_SESSION['is_logged_in']) || $_SESSION['is_logged_in'] !== true) {
+            // Lưu URL hiện tại để sau khi đăng nhập quay lại
+            $redirectUrl = "/VNPay/Cart/Show";
+            header("Location: /VNPay/Auth/Show?redirect=" . urlencode($redirectUrl));
+            exit();
+        }
+        
+        // Lấy customer_id từ session
+        $customer_id = $_SESSION['user_id'];
+        
         $model = $this->model("CartModel");
         $this->view("Layout/MainLayout", [
-            "Page" => "Pages/Cart", // Đường dẫn đến view Product
-            "Model" => $model->GetCart() // Dữ liệu sản phẩm
+            "Page" => "Pages/Cart",
+            "Model" => $model->GetCart($customer_id) // Truyền customer_id từ session
         ]);
     }
+    
     public function DeleteItem()
     {
+        // Kiểm tra đăng nhập
+        if (!isset($_SESSION['is_logged_in']) || $_SESSION['is_logged_in'] !== true) {
+            header("Location: /VNPay/Auth/Show?redirect=/VNPay/Cart/Show");
+            exit();
+        }
+        
         if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["orderdetail_id"])) {
             $orderdetail_id = $_POST["orderdetail_id"];
             $model = $this->model("CartModel");
@@ -29,19 +71,28 @@ class Cart extends Controller
 
     public function AddToCart()
     {
-    // Lấy thông tin từ request
+        // Kiểm tra đăng nhập
+        if (!isset($_SESSION['is_logged_in']) || $_SESSION['is_logged_in'] !== true) {
+            // Lưu URL để quay lại sau khi đăng nhập
+            $referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '/VNPay/Product/Show';
+            header("Location: /VNPay/Auth/Show?redirect=" . urlencode($referer));
+            exit();
+        }
+        
+        // Lấy customer_id từ session
+        $customer_id = $_SESSION['user_id'];
+        
+        // Lấy thông tin từ request
         $product_id = isset($_POST['product_id']) ? $_POST['product_id'] : null;
         $product_amount = isset($_POST['product_amount']) ? $_POST['product_amount'] : 1;
         $current_page = isset($_POST['current_page']) ? (int)$_POST['current_page'] : 1;
         $search = isset($_POST['search']) ? $_POST['search'] : '';
         $category = isset($_POST['category']) ? $_POST['category'] : '';
-        // ID của người dùng hiện tại (có thể lấy từ session)
-        $customer_id = 3; // Thay bằng ID thực tế từ session
         
         if ($product_id) {
             // Thêm sản phẩm vào giỏ hàng
             $cartModel = $this->model("CartModel");
-            $cart = $cartModel->GetCart();
+            $cart = $cartModel->GetCart($customer_id);
             $orders_id = !empty($cart) ? $cart[0]['orders_id'] : null;
             $result = $cartModel->InsertItem($orders_id, $customer_id, $product_id, $product_amount);
         }
@@ -78,15 +129,24 @@ class Cart extends Controller
     public function AddToCartAjax() {
         // Kiểm tra xem yêu cầu có phải POST không
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Kiểm tra đăng nhập
+            if (!isset($_SESSION['is_logged_in']) || $_SESSION['is_logged_in'] !== true) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng']);
+                exit;
+            }
+            
+            // Lấy customer_id từ session
+            $customer_id = $_SESSION['user_id'];
+            
             // Lấy dữ liệu từ request
             $product_id = isset($_POST['product_id']) ? $_POST['product_id'] : null;
             $product_amount = isset($_POST['product_amount']) ? $_POST['product_amount'] : 1;
-            $customer_id = 3; // Giả sử customer_id là 3 như trong code gốc
             
             if ($product_id) {
                 // Gọi model để thêm vào giỏ hàng
                 $cartModel = $this->model("CartModel");
-                $cart = $cartModel->GetCart();
+                $cart = $cartModel->GetCart($customer_id);
                 $orders_id = !empty($cart) ? $cart[0]['orders_id'] : null;
                 $result = $cartModel->InsertItem($orders_id, $customer_id, $product_id, $product_amount);
                 

@@ -2,19 +2,26 @@
 
 class CartModel extends DB
 {
-    public function GetCart()
+    public function GetCart($customer_id = null)
     {
-        $query = "select  od.total_price, odd.orderdetail_id, product_name, product_price, odd.product_amount, od.orders_id, pd.product_id
-                from
-                orders od
-                join orderdetail odd
-                on od.orders_id = odd.orders_id
-                join product pd
-                on odd.product_id=pd.product_id
-                where od.customer_id = 3 and od.status = 'Incompleted';
-                ";
-        $results = mysqli_query($this->conn, $query);
-        return $results->fetch_all(MYSQLI_ASSOC);
+        // Nếu không có customer_id được truyền vào, sử dụng mặc định là 3
+        if ($customer_id === null) {
+            $customer_id = 3;
+        }
+        
+        $query = "SELECT od.total_price, odd.orderdetail_id, product_name, product_price, 
+                odd.product_amount, od.orders_id, pd.product_id
+                FROM orders od
+                JOIN orderdetail odd ON od.orders_id = odd.orders_id
+                JOIN product pd ON odd.product_id = pd.product_id
+                WHERE od.customer_id = ? AND od.status = 'Incompleted'";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("i", $customer_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
 
 

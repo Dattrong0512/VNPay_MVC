@@ -1,7 +1,7 @@
 <?php
 class OrderHistoryModel extends DB
 {
-    public function GetAllOrders($customer_id = 3)
+    public function GetAllOrders($customer_id)
     {
         $query = "SELECT o.orders_id, o.customer_id, o.order_date, 
                          o.status, o.total_price 
@@ -29,6 +29,7 @@ class OrderHistoryModel extends DB
     
     public function GetOrderProducts($order_id)
     {
+        // Giữ nguyên phương thức này
         $query = "SELECT p.product_name, od.product_amount, p.product_price
                   FROM orderdetail od
                   JOIN product p ON od.product_id = p.product_id
