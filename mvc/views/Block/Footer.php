@@ -12,6 +12,29 @@
             background-color: #222;
             border-top: 1px solid #444;
         }
+
+        footer {
+            background: linear-gradient(135deg, #000000 0%, #0b0d0f 15%, #1c2833 50%, #2c3e50 85%, #2c3e50 100%);
+            color: #fff;
+            text-align: center;
+            padding: 20px 40px;
+            width: 100%;
+            margin-top: auto;
+            position: relative;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* Hiệu ứng highlight tinh tế dưới cùng */
+        footer:after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(66, 134, 244, 0.15), transparent);
+        }
+
         .footer-links a:hover {
             color: #f0c14b;
         }

@@ -1,3 +1,10 @@
+<?php
+// Khởi tạo session trước khi xuất bất kỳ nội dung HTML nào
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -20,7 +27,8 @@
         }
 
         header {
-            background-color: #222;
+            background: linear-gradient(135deg, #2c3e50 0%, #2c3e50 15%, #1c2833 50%, #0b0d0f 85%, #000000 100%);
+            position: relative;
             color: #fff;
             padding: 15px 40px;
             position: fixed;
@@ -30,7 +38,18 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Hiệu ứng highlight tinh tế */
+        header:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(66, 134, 244, 0.15), transparent);
         }
 
         .logo {
@@ -147,7 +166,7 @@
 <body>
     <header>
         <div class="logo">
-            <a href="/VNPay/Home">Gymilize</a>
+            <a href="/VNPay/Home">MusclePlus</a>
         </div>
         <div class="header-right">
             <?php
