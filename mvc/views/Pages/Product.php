@@ -98,33 +98,35 @@
             $productImg = "/VNPay/public/images/product/{$productId}.png";
             ?>
             <div class="product-card">
-                <div class="product-image-container">
-                    <img src="<?php echo $productImg; ?>" alt="<?php echo htmlspecialchars($product['product_name']); ?>" class="product-image" onerror="this.src='/VNPay/public/images/product/default.png'">
-                </div>
-                <div class="product-info">
-                    <div class="product-title-container">
-                        <h3 class="product-title"><?php echo $product["product_name"]; ?></h3>
+                <a href="/VNPay/Product/Detail/<?php echo $product['product_id']; ?>" class="product-link">
+                    <div class="product-image-container">
+                        <img src="<?php echo $productImg; ?>" alt="<?php echo htmlspecialchars($product['product_name']); ?>" class="product-image" onerror="this.src='/VNPay/public/images/product/default.png'">
                     </div>
-                    <p class="product-price"><?php echo number_format($product["product_price"], 0, ',', '.'); ?> VND</p>
-                    <div class="button-container">
-                        <form class="add-to-cart-form" onsubmit="addToCart(event, <?php echo $product['product_id']; ?>)">
-                            <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
-                            <input type="hidden" name="product_amount" value="1">
-                            
-                            <!-- Giữ thông tin tìm kiếm và danh mục giữ nguyên -->
-                            <?php if (!empty($data['Search'])): ?>
-                                <input type="hidden" name="search" value="<?php echo htmlspecialchars($data['Search']); ?>">
-                            <?php endif; ?>
-                            
-                            <?php if (!empty($data['CategoryId'])): ?>
-                                <input type="hidden" name="category" value="<?php echo $data['CategoryId']; ?>">
-                            <?php endif; ?>
-                            
-                            <button type="submit" class="btn btn-primary add-to-cart-btn">
-                                Thêm vào giỏ hàng
-                            </button>
-                        </form>
+                    <div class="product-info">
+                        <div class="product-title-container">
+                            <h3 class="product-title"><?php echo htmlspecialchars($product["product_name"]); ?></h3>
+                        </div>
+                        <p class="product-price"><?php echo number_format($product["product_price"], 0, ',', '.'); ?> VND</p>
                     </div>
+                </a>
+                <div class="button-container">
+                    <form class="add-to-cart-form" onsubmit="addToCart(event, <?php echo $product['product_id']; ?>)">
+                        <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
+                        <input type="hidden" name="product_amount" value="1">
+                        
+                        <!-- Giữ thông tin tìm kiếm và danh mục giữ nguyên -->
+                        <?php if (!empty($data['Search'])): ?>
+                            <input type="hidden" name="search" value="<?php echo htmlspecialchars($data['Search']); ?>">
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($data['CategoryId'])): ?>
+                            <input type="hidden" name="category" value="<?php echo $data['CategoryId']; ?>">
+                        <?php endif; ?>
+                        
+                        <button type="submit" class="btn btn-primary add-to-cart-btn">
+                            Thêm vào giỏ hàng
+                        </button>
+                    </form>
                 </div>
             </div>
             <?php
@@ -248,6 +250,21 @@
     margin-bottom: 15px;
 }
 
+.product-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s ease;
+}
+
+.product-link:hover .product-image {
+    transform: scale(1.05);
+}
+
+.product-link:hover .product-title {
+    color: #e74c3c;
+}
+
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
@@ -306,9 +323,11 @@ function processAddToCart(form, productId) {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Response data:', data);  // Debug để xem dữ liệu trả về
+        
         if(data.success) {
-            // Cập nhật số lượng trong giỏ hàng
-            updateCartCount(1);
+            // Cập nhật số lượng trong giỏ hàng, chỉ khi là sản phẩm mới
+            updateCartCount(data.isNewProduct);
             
             // Hiển thị thông báo thành công
             showNotification("Đã thêm sản phẩm vào giỏ hàng");
@@ -329,6 +348,22 @@ function processAddToCart(form, productId) {
         button.textContent = originalText;
         button.disabled = false;
     });
+}
+
+// Thay đổi hàm updateCartCount để xử lý đúng việc thêm sản phẩm mới
+function updateCartCount(isNewProduct) {
+    const cartCountElement = document.querySelector('.cart-count');
+    
+    if (cartCountElement && isNewProduct === true) {
+        const currentCount = parseInt(cartCountElement.textContent, 10) || 0;
+        cartCountElement.textContent = currentCount + 1;
+        
+        // Thêm hiệu ứng khi cập nhật số lượng
+        cartCountElement.classList.add('update-animation');
+        setTimeout(() => {
+            cartCountElement.classList.remove('update-animation');
+        }, 500);
+    }
 }
 
 // Hàm hiển thị thông báo
@@ -420,16 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         `;
                         
                         item.addEventListener('click', function() {
-                            // Cập nhật giá trị của input search với tên sản phẩm
-                            searchInput.value = product.product_name;
-                            
-                            // Tìm form chứa input search
-                            const searchForm = searchInput.closest('form');
-                            
-                            // Submit form để thực hiện tìm kiếm
-                            if (searchForm) {
-                                searchForm.submit();
-                            }
+                            window.location.href = `/VNPay/Product/Detail/${product.product_id}`;
                         });
                         
                         suggestionContainer.appendChild(item);

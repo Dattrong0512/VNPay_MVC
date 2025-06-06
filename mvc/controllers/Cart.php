@@ -127,15 +127,8 @@ class Cart extends Controller
     }
 
     public function AddToCartAjax() {
-        // Kiểm tra xem yêu cầu có phải POST không
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Kiểm tra đăng nhập
-            if (!isset($_SESSION['is_logged_in']) || $_SESSION['is_logged_in'] !== true) {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng']);
-                exit;
-            }
-            
+        
             // Lấy customer_id từ session
             $customer_id = $_SESSION['user_id'];
             
@@ -148,23 +141,47 @@ class Cart extends Controller
                 $cartModel = $this->model("CartModel");
                 $cart = $cartModel->GetCart($customer_id);
                 $orders_id = !empty($cart) ? $cart[0]['orders_id'] : null;
+                
+                // Kiểm tra sản phẩm đã có trong giỏ hàng chưa
+                $isNewProduct = true;
+                foreach ($cart as $item) {
+                    if ($item['product_id'] == $product_id) {
+                        $isNewProduct = false;
+                        break;
+                    }
+                }
+                
                 $result = $cartModel->InsertItem($orders_id, $customer_id, $product_id, $product_amount);
+                
+                // Đảm bảo có kết quả trả về đúng định dạng
+                $responseData = [
+                    'success' => is_object($result) ? $result->success : (is_array($result) ? $result['success'] : $result),
+                    'isNewProduct' => $isNewProduct
+                ];
                 
                 // Trả về kết quả dạng JSON
                 header('Content-Type: application/json');
-                if ($result) {
-                    echo json_encode(['success' => true]);
-                } else {
-                    echo json_encode(['success' => false, 'message' => 'Không thể thêm sản phẩm vào giỏ hàng']);
-                }
+                echo json_encode($responseData);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Thiếu thông tin sản phẩm']);
             }
             exit;
         }
+    }
+
+    public function GetCartCount() {
+        if (!isset($_SESSION['user_id'])) {
+            header('Content-Type: application/json');
+            echo json_encode(['count' => 0]);
+            return;
+        }
         
-        // Nếu không phải POST request, chuyển hướng về trang sản phẩm
-        header("Location: /VNPay/Product/Show");
+        $customer_id = $_SESSION['user_id'];
+        $cartModel = $this->model("CartModel");
+        $count = $cartModel->GetCartItemCount($customer_id);
+        
+        header('Content-Type: application/json');
+        echo json_encode(['count' => $count]);
     }
     
 
@@ -193,7 +210,7 @@ class Cart extends Controller
 
         $vnp_Amount = $tongtien * 100;
         $vnp_Locale = 'vn';
-        $vnp_BankCode = 'NCB';
+        // $vnp_BankCode = 'NCB';
         $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
 
         $vnp_ExpireDate = $expire;
@@ -215,9 +232,9 @@ class Cart extends Controller
 
         );
 
-        if (isset($vnp_BankCode) && $vnp_BankCode != "") {
-            $inputData['vnp_BankCode'] = $vnp_BankCode;
-        }
+        // if (isset($vnp_BankCode) && $vnp_BankCode != "") {
+        //     $inputData['vnp_BankCode'] = $vnp_BankCode;
+        // }
         //var_dump($inputData);
         ksort($inputData);
         $query = "";

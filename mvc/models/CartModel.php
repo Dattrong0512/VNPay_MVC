@@ -36,13 +36,18 @@ class CartModel extends DB
 
     public function InsertItem($orders_id, $customer_id, $product_id, $product_amount)
     {
+        // Kiểm tra xem đã có đơn hàng chưa hoàn thành không
         $checkOrder = "SELECT orders_id FROM orders WHERE customer_id = ? and status = 'Incompleted'";
         $stmt = $this->conn->prepare($checkOrder);
         $stmt->bind_param("i", $customer_id);
         $stmt->execute();
         $result = $stmt->get_result();
         
+        // Biến để theo dõi xem có phải sản phẩm mới hay không
+        $isNewProduct = true;
+        
         if ($result->num_rows == 0) {
+            // Nếu chưa có đơn hàng, tạo đơn hàng mới
             $createOrder = "INSERT INTO orders (customer_id, status, total_price) VALUES ( ?, 'Incompleted', 0)";
             $stmt = $this->conn->prepare($createOrder);
             $stmt->bind_param("i",$customer_id);
@@ -53,20 +58,22 @@ class CartModel extends DB
             }
             $orders_id = $stmt->insert_id;
         } else {
-            // Nếu đã có đơn hàng, cần lấy orders_id từ kết quả query
+            // Nếu đã có đơn hàng, lấy orders_id
             $row = $result->fetch_assoc(); 
-            $orders_id = $row['orders_id'];  // Dòng này đang thiếu!
+            $orders_id = $row['orders_id'];
         }
         
         // Kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
         $checkItem = "SELECT orderdetail_id, product_amount FROM orderdetail 
-                      WHERE orders_id = ? AND product_id = ?";
+                    WHERE orders_id = ? AND product_id = ?";
         $stmt = $this->conn->prepare($checkItem);
         $stmt->bind_param("ii", $orders_id, $product_id);
         $stmt->execute();
         $result = $stmt->get_result();
         
         if ($result->num_rows > 0) {
+            // Sản phẩm đã tồn tại, cập nhật số lượng
+            $isNewProduct = false;
             $item = $result->fetch_assoc();
             $newAmount = $item["product_amount"] + $product_amount;
             
@@ -77,7 +84,7 @@ class CartModel extends DB
             
             $success = $stmt->affected_rows > 0;
         } else {
-            // Nếu sản phẩm chưa tồn tại, thêm mới
+            // Sản phẩm chưa tồn tại, thêm mới
             $insertQuery = "INSERT INTO orderdetail (orders_id, product_id, product_amount) VALUES (?, ?, ?)";
             $stmt = $this->conn->prepare($insertQuery);
             $stmt->bind_param("iii", $orders_id, $product_id, $product_amount);
@@ -91,7 +98,10 @@ class CartModel extends DB
             $this->updateOrderTotal($orders_id);
         }
         
-        return $success;
+        $result = new stdClass();
+        $result->success = $success;
+        $result->isNewProduct = $isNewProduct;
+        return $result;
     }
     
     private function updateOrderTotal($orders_id)
@@ -122,5 +132,25 @@ class CartModel extends DB
         $stmt->execute();
         
         return $stmt->affected_rows > 0;
+    }
+
+    public function GetCartItemCount($customer_id) {
+        // Đếm số loại sản phẩm khác nhau trong giỏ hàng
+        $query = "SELECT COUNT(odd.product_id) as item_count
+                FROM orders od
+                JOIN orderdetail odd ON od.orders_id = odd.orders_id
+                WHERE od.customer_id = ? AND od.status = 'Incompleted'";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("i", $customer_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            return $row['item_count'];
+        }
+        
+        return 0;
     }
 }

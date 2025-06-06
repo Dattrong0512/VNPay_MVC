@@ -142,4 +142,42 @@ class ProductModel extends DB
         
         return $suggestions;
     }
+
+    public function getProductById($id) {
+        $query = "SELECT * FROM product WHERE product_id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            return $result->fetch_assoc();
+        }
+        
+        return null;
+    }
+
+    public function getRelatedProducts($categoryId, $currentProductId, $limit = 4) {
+        $query = "SELECT * FROM product WHERE category_id = ? AND product_id != ? ORDER BY RAND() LIMIT ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("iii", $categoryId, $currentProductId, $limit);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getCategoryById($id) {
+        $query = "SELECT * FROM category WHERE category_id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            return $result->fetch_assoc();
+        }
+        
+        return null;
+    }
 }

@@ -53,4 +53,51 @@ class Product extends Controller
         echo json_encode($suggestions);
         exit;
     }
+
+    public function Detail($id = null) {
+        // Xử lý trường hợp $id là mảng
+        if (is_array($id) && !empty($id)) {
+            $id = $id[0];  // Lấy phần tử đầu tiên của mảng
+        }
+        
+        error_log("Detail method called with processed ID: " . $id);
+        
+        if (!isset($id) || !is_numeric($id)) {
+            error_log("ID not valid: " . $id);
+            header('Location: /VNPay/Product/Show');
+            return;
+        }
+        
+        // Phần còn lại của phương thức giữ nguyên
+        $productModel = $this->model("ProductModel");
+        $product = $productModel->getProductById($id);
+        
+        error_log("Product data: " . json_encode($product));
+        
+        if (!$product) {
+            error_log("Product not found for ID: " . $id);
+            header('Location: /VNPay/Product/Show');
+            return;
+        }
+        
+        // Lấy các sản phẩm liên quan (cùng danh mục)
+        $relatedProducts = $productModel->getRelatedProducts($product['category_id'], $id, 4);
+        
+        // Bỏ qua việc lấy thông tin danh mục hoặc xử lý nó trong ProductModel
+        // $categoryModel = $this->model("CategoryModel");
+        // $category = $categoryModel->getCategoryById($product['category_id']);
+        
+        // Hoặc có thể lấy danh mục từ ProductModel nếu nó đã có sẵn phương thức tương tự
+        $category = isset($product['category_id']) ? 
+            $productModel->getCategoryById($product['category_id']) : null;
+        
+        // Truyền dữ liệu sang view
+        $this->view("Layout/MainLayout", [
+            "Page" => "Pages/Product/Detail",
+            "Product" => $product,
+            "Category" => $category,
+            "RelatedProducts" => $relatedProducts,
+            "Title" => $product['product_name']
+        ]);
+    }
 }

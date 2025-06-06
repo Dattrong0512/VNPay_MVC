@@ -41,12 +41,10 @@ if (session_status() == PHP_SESSION_NONE) {
     <!-- Thêm phần quảng cáo hoặc banner dưới menu -->
     <div class="sidebar-promo" style="margin-top: auto; flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start;">
         <div class="promo-box" style="background-color: #fff; border-radius: 8px; padding: 15px; margin-top: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <h4 style="color: #e67e22; font-size: 18px; margin-bottom: 10px;">Khuyến mãi</h4>
-            <p style="color: #555; font-size: 14px; margin-bottom: 15px;">Giảm giá 10% cho đơn hàng đầu tiên khi đăng ký thành viên mới!</p>
+            <h4 style="color: #e67e22; font-size: 18px; margin-bottom: 10px;">Mừng khai trương</h4>
+            <p style="color: #555; font-size: 14px; margin-bottom: 15px;">Chi nhánh MusclePlus đã được mở tại TPHCM với vô vàn ưu đãi hấp dẫn</p>
             <?php if(!isset($_SESSION['is_logged_in'])): ?>
-            <a href="/VNPay/Auth/Register" style="display: inline-block; background-color: #e67e22; color: white; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; text-align: center;">Đăng ký ngay</a>
-            <?php else: ?>
-            <p style="color: #777; font-size: 13px; font-style: italic;">Cảm ơn bạn đã là thành viên của chúng tôi!</p>
+            <p style="color: #777; font-size: 13px; font-style: italic;">Đến và mua sắm ngay hôm nay!</p>
             <?php endif; ?>
         </div>
     </div>
