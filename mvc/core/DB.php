@@ -5,9 +5,9 @@ use Dom\Mysql;
 class DB
 {
     public $conn;
-    public $servername = "localhost";
-    public $username = "minhquan";
-    public $password = "12345";
+    public $servername = "157.230.47.29";
+    public $username = "root";
+    public $password = "12345678Aa";
     public $dbname = "VNPAYSHOP";
 
     function __construct()
